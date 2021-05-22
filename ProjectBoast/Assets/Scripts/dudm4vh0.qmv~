@@ -1,0 +1,87 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class Rocket : MonoBehaviour
+{[SerializeField] float mainThrust = 100f;
+    [SerializeField] float sideThrust = 100f;
+    Rigidbody rocketBody;
+    AudioSource rocketAudio;
+    enum State { isAlive , trasending , dying};
+    State state = State.isAlive;
+    // Start is called before the first frame update
+    void Start()
+    {
+        rocketBody = GetComponent<Rigidbody>();
+        rocketAudio = GetComponent<AudioSource>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {if (state == State.isAlive)
+        {
+            movement();
+            Thurst();
+        }
+    }
+
+    private void movement()
+    {
+        if (Input.GetKey(KeyCode.D))
+        {
+            transform.Rotate(-Vector3.forward* Time.deltaTime * sideThrust);
+        }
+        else if (Input.GetKey(KeyCode.A))
+        {
+            transform.Rotate(Vector3.forward*Time.deltaTime * sideThrust);
+        }
+    }
+
+    private void Thurst()
+    {
+        if (Input.GetKey(KeyCode.Space))
+        {
+            rocketBody.freezeRotation = true;
+            rocketBody.AddRelativeForce(Vector3.up* Time.deltaTime * mainThrust);
+            if (!rocketAudio.isPlaying)
+            {
+                rocketAudio.Play();
+            }
+        }
+        else
+        {
+            rocketAudio.Stop();
+            rocketBody.freezeRotation = false;
+        }
+    }
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (!State.isAlive)
+        {
+            return;
+        }
+        if (collision.gameObject.tag == "Friendly")
+        { Debug.Log("OK"); }
+        else if (collision.gameObject.tag == "Finish")
+        {
+            state = State.trasending;
+           Invoke("LoadNewScene",1f);
+        }
+        if (collision.gameObject.tag == "Untagged")
+        {
+            state = State.dying;
+            Invoke("LoadNextScene", 1f);
+        }
+    }
+
+    private static void LoadNextScene()
+    {
+        SceneManager.LoadScene(1);
+    }
+    private static void LoadNextScene()
+    {
+        SceneManager.LoadScene(1);
+    }
+}
